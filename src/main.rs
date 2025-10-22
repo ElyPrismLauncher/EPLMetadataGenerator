@@ -16,7 +16,6 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-
 use reqwest::Error;
 use roxmltree::{Document, Node};
 use sha1::{Digest, Sha1};
@@ -75,9 +74,9 @@ async fn main() {
         authlib_versions_to_full_versions.insert(authlib_version.to_string(), full_version);
     }
 
-    let mut authlib_versions: Vec<_> = authlib_versions_to_full_versions.keys().collect::<Vec<_>>();
+    let mut authlib_versions: Vec<&String> = authlib_versions_to_full_versions.keys().collect();
     authlib_versions.sort_by_key(|x| {
-        let version_numbers = x.split('.').collect::<Vec<_>>();
+        let version_numbers: Vec<&str> = x.split('.').collect();
         let mut score = 0;
 
         score += 1_000_000 * version_numbers[0].parse::<i32>().unwrap();
@@ -105,7 +104,6 @@ async fn main() {
             })
         }
     });
-
 
     let authlib_metadatas = futures::future::join_all(authlib_metadata_futures).await;
 
@@ -140,7 +138,7 @@ async fn main() {
         }
     }
 
-    std::fs::write(output_file, json::stringify_pretty(json, 4)).unwrap();
+    std::fs::write(output_file, json::stringify_pretty(json, 2)).unwrap();
 }
 
 struct LibraryMetadata {
