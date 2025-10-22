@@ -96,7 +96,8 @@ async fn main() {
             let response = client.get(&url).send().await?.bytes().await?;
             let sha1 = hex::encode(Sha1::digest(&response));
             let size = response.len();
-            Ok::<LibraryMetadata, Error>(LibraryMetadata {
+            Ok::<LibraryOverrideMetadata, Error>(LibraryOverrideMetadata {
+                target_version: version.to_string(),
                 name: format!("by.ely:authlib:{}", full_version),
                 url,
                 sha1,
@@ -108,11 +109,11 @@ async fn main() {
     let authlib_metadatas = futures::future::join_all(authlib_metadata_futures).await;
 
     let mut json = json::JsonValue::new_object();
-    let mut overrides = json::JsonValue::new_array();
+    let mut overrides = json::JsonValue::new_object();
     for metadata_result in authlib_metadatas {
         match metadata_result {
             Ok(metadata) => {
-                overrides.push(json::object! {
+                overrides.insert(&*metadata.target_version, json::object! {
                     name: metadata.name,
                     url: metadata.url,
                     sha1: metadata.sha1,
@@ -141,7 +142,8 @@ async fn main() {
     std::fs::write(output_file, json::stringify_pretty(json, 2)).unwrap();
 }
 
-struct LibraryMetadata {
+struct LibraryOverrideMetadata {
+    target_version: String,
     name: String,
     url: String,
     sha1: String,
