@@ -48,7 +48,7 @@ async fn main() {
         .expect("Couldn't download Maven metadata")
         .text().await
         .expect("Couldn't get text from metadata response");
-    let metadata_doc = Document::parse(&*metadata).expect("Couldn't parse Maven metadata");
+    let metadata_doc = Document::parse(&metadata).expect("Couldn't parse Maven metadata");
 
     let metadata_versions: Vec<Node> = metadata_doc.descendants().find(|n| { n.has_tag_name("metadata") }).unwrap()
         .children().find(|n| n.has_tag_name("versioning")).unwrap()
@@ -113,7 +113,7 @@ async fn main() {
     for metadata_result in authlib_metadatas {
         match metadata_result {
             Ok(metadata) => {
-                overrides.insert(&*metadata.target_version, json::object! {
+                overrides.insert(&metadata.target_version, json::object! {
                     name: metadata.name,
                     url: metadata.url,
                     sha1: metadata.sha1,
